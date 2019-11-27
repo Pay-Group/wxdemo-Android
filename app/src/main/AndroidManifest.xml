@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example">
+    package="cn.sunday">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -19,7 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".wxapi.WXPayActivity">
+        <activity android:name="cn.sunday.imoochybridandroidnative.WXPayActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".wxapi.WXPayEntryActivity"
+            android:name="cn.sunday.imoochybridandroidnative.WXPayEntryActivity"
             android:exported="true"
             android:launchMode="singleTop" />
     </application>

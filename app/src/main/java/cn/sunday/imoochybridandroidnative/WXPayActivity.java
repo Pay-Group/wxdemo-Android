@@ -1,4 +1,4 @@
-package com.example.wxapi;
+package cn.sunday.imoochybridandroidnative;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.example.R;
 import com.tencent.mm.opensdk.modelpay.PayReq;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
@@ -17,15 +16,21 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import cn.sunday.R;
+import cn.sunday.imoochybridandroidnative.util.WeiXinConstants;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import static com.example.wxapi.util.WeiXinConstants.APP_ID;
+import static cn.sunday.imoochybridandroidnative.util.WeiXinConstants.APP_ID;
+import static cn.sunday.imoochybridandroidnative.util.WeiXinConstants.PARTNER_ID;
 
-
+/**
+ * App发起支付
+ * https://pay.weixin.qq.com/wiki/doc/api/app/app.php?chapter=9_12&index=2
+ */
 public class WXPayActivity extends AppCompatActivity {
     OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
     private static final String TAG = "PayActivity";
@@ -40,7 +45,7 @@ public class WXPayActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 button.setEnabled(false);
-                String url = "商户服务端接口";
+                String url = "http://best-pay.springboot.cn/pay?amount=0.1&payType=WXPAY_APP&orderId=" + System.currentTimeMillis();
                 Request request = new Request.Builder().url(url).build();
                 Call call = okHttpClient.newCall(request);
                 call.enqueue(new Callback() {
@@ -56,25 +61,19 @@ public class WXPayActivity extends AppCompatActivity {
                             try {
                                 JSONObject jsonObject = new JSONObject(response.body().string());
                                 Log.i(TAG,jsonObject.toString());
-                                int code = jsonObject.getInt("code");
-                                if (code == 0) {
-                                    JSONObject data = jsonObject.getJSONObject("data");
-                                    String appId = data.getString("appid");
-                                    String partnerId = data.getString("partnerid");
-                                    String prepayId = data.getString("prepayid");
-                                    String packageValue = data.getString("package");
-                                    String nonceStr = data.getString("noncestr");
-                                    String timeStamp = data.getString("timestamp");
-                                    String extData = data.getString("extdata");
-                                    String sign = data.getString("sign");
+                                String p = jsonObject.getString("package");
+                                if (p.contains("prepay_id=")) {
+                                    String prepayId = p.replace("prepay_id=", "");
+                                    String nonceStr = jsonObject.getString("nonceStr");
+                                    String timeStamp = jsonObject.getString("timeStamp");
+                                    String sign = jsonObject.getString("paySign");
                                     PayReq req = new PayReq();
-                                    req.appId = appId;
-                                    req.partnerId = partnerId;
+                                    req.appId = WeiXinConstants.APP_ID;
+                                    req.partnerId = WeiXinConstants.PARTNER_ID;
                                     req.prepayId = prepayId;
-                                    req.packageValue = packageValue;
+                                    req.packageValue = WeiXinConstants.PACKAGE_VALUE;
                                     req.nonceStr = nonceStr;
                                     req.timeStamp = timeStamp;
-                                    req.extData = extData;
                                     req.sign = sign;
                                     boolean result = wxapi.sendReq(req);
                                     Toast.makeText(WXPayActivity.this, "调起支付结果:" +result, Toast.LENGTH_LONG).show();

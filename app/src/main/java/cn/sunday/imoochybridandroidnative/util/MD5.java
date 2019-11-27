@@ -1,4 +1,4 @@
-package com.example.wxapi.util;
+package cn.sunday.imoochybridandroidnative.util;
 
 import java.security.MessageDigest;
 

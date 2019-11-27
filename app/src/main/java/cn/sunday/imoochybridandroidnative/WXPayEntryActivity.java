@@ -1,4 +1,4 @@
-package com.example.wxapi;
+package cn.sunday.imoochybridandroidnative;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.example.R;
 import com.tencent.mm.opensdk.constants.ConstantsAPI;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
@@ -14,7 +13,7 @@ import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
-import static com.example.wxapi.util.WeiXinConstants.APP_ID;
+import cn.sunday.imoochybridandroidnative.util.WeiXinConstants;
 
 public class WXPayEntryActivity extends Activity implements IWXAPIEventHandler {
 
@@ -24,8 +23,8 @@ public class WXPayEntryActivity extends Activity implements IWXAPIEventHandler {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.pay_result);
-        api = WXAPIFactory.createWXAPI(this, APP_ID);
+        setContentView(cn.sunday.R.layout.pay_result);
+        api = WXAPIFactory.createWXAPI(this, WeiXinConstants.APP_ID);
         api.handleIntent(getIntent(), this);
     }
 
@@ -48,7 +47,7 @@ public class WXPayEntryActivity extends Activity implements IWXAPIEventHandler {
             //签名工具下载：https://open.weixin.qq.com/zh_CN/htmledition/res/dev/download/sdk/Gen_Signature_Android.apk
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("提示");
-            builder.setMessage(getString(R.string.pay_result_callback_msg, String.valueOf(resp.errCode)));
+            builder.setMessage(getString(cn.sunday.R.string.pay_result_callback_msg, String.valueOf(resp.errCode)));
             builder.show();
         }
     }
