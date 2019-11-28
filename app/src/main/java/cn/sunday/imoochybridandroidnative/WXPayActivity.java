@@ -1,11 +1,15 @@
 package cn.sunday.imoochybridandroidnative;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
 
 import com.tencent.mm.opensdk.modelpay.PayReq;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
@@ -34,12 +38,14 @@ import static cn.sunday.imoochybridandroidnative.util.WeiXinConstants.PARTNER_ID
 public class WXPayActivity extends AppCompatActivity {
     OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
     private static final String TAG = "PayActivity";
+    private IWXAPI wxapi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wxpay);
-        final IWXAPI wxapi = WXAPIFactory.createWXAPI(this, APP_ID,false);
+        wxapi  = WXAPIFactory.createWXAPI(this, APP_ID,false);
+        wxapi.registerApp(APP_ID);
         final Button button = findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,37 +64,47 @@ public class WXPayActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
                         if (response.isSuccessful()) {
-                            try {
-                                JSONObject jsonObject = new JSONObject(response.body().string());
-                                Log.i(TAG,jsonObject.toString());
-                                String p = jsonObject.getString("package");
-                                if (p.contains("prepay_id=")) {
-                                    String prepayId = p.replace("prepay_id=", "");
-                                    String nonceStr = jsonObject.getString("nonceStr");
-                                    String timeStamp = jsonObject.getString("timeStamp");
-                                    String sign = jsonObject.getString("paySign");
-                                    PayReq req = new PayReq();
-                                    req.appId = WeiXinConstants.APP_ID;
-                                    req.partnerId = WeiXinConstants.PARTNER_ID;
-                                    req.prepayId = prepayId;
-                                    req.packageValue = WeiXinConstants.PACKAGE_VALUE;
-                                    req.nonceStr = nonceStr;
-                                    req.timeStamp = timeStamp;
-                                    req.sign = sign;
-                                    boolean result = wxapi.sendReq(req);
-                                    Toast.makeText(WXPayActivity.this, "调起支付结果:" +result, Toast.LENGTH_LONG).show();
-//
-                                } else {
-                                    Toast.makeText(WXPayActivity.this, "数据出错", Toast.LENGTH_LONG).show();
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
+                            Message message = new Message();
+                            message.obj = response;
+                            handler.sendMessage(message);
+
                         }
-                        button.setEnabled(true);
                     }
                 });
             }
         });
     }
+
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+
+            Response response = (Response) msg.obj;
+            try {
+                JSONObject jsonObject = new JSONObject(response.body().string());
+                Log.i(TAG,jsonObject.toString());
+                String p = jsonObject.getString("prepayId");
+                if (p != null && !p.equals("")) {
+                    String nonceStr = jsonObject.getString("nonceStr");
+                    String timeStamp = jsonObject.getString("timeStamp");
+                    String sign = jsonObject.getString("paySign");
+                    PayReq req = new PayReq();
+                    req.appId = jsonObject.getString("appId");
+                    req.partnerId = WeiXinConstants.PARTNER_ID;
+                    req.prepayId = p;
+                    req.packageValue = jsonObject.getString("package");
+                    req.nonceStr = nonceStr;
+                    req.timeStamp = timeStamp;
+                    req.sign = sign;
+                    boolean result = wxapi.sendReq(req);
+                    Toast.makeText(WXPayActivity.this, "调起支付结果:" +result, Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(WXPayActivity.this, "数据出错", Toast.LENGTH_LONG).show();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    };
 }

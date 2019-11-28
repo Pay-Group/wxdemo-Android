@@ -1,4 +1,4 @@
-package cn.sunday.imoochybridandroidnative;
+package cn.sunday.imoochybridandroidnative.wxapi;
 
 import android.app.Activity;
 import android.app.AlertDialog;
